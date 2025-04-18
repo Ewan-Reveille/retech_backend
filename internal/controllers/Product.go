@@ -70,6 +70,7 @@ func (pc *ProductController) UpdateProduct(c *fiber.Ctx) error {
 	return c.JSON(p)
 }
 
+// DELETE /products/:id
 func (pc *ProductController) DeleteProduct(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := uuid.Parse(idStr)
