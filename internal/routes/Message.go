@@ -8,7 +8,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func RegisterCategoryRoutes(app fiber.Router, db *gorm.DB) {
+func RegisterMessageRoutes(app fiber.Router, db *gorm.DB) {
 	categoryModel := &models.CategoryModel{DB: db}
 	categoryService := &services.CategoryService{Repo: categoryModel}
 	categoryController := &controllers.CategoryController{CategoryService: categoryService}
