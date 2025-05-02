@@ -1,16 +1,16 @@
 package routes
 
 import (
+	"github.com/Ewan-Reveille/retech/controllers"
+	"github.com/Ewan-Reveille/retech/models"
+	"github.com/Ewan-Reveille/retech/services"
 	"github.com/gofiber/fiber/v2"
-	"github.com/Ewan-Reveille/retech/internal/controllers"
-	"github.com/Ewan-Reveille/retech/internal/services"
-	"github.com/Ewan-Reveille/retech/internal/models"
 	"gorm.io/gorm"
 )
 
 func RegisterProductRoutes(app fiber.Router, db *gorm.DB) {
 	productModel := &models.ProductModel{DB: db}
-	productService := &services.ProductService{Repo: productModel}
+	productService := &services.ProductService{Repo: productModel, DB: db}
 	productController := &controllers.ProductController{ProductService: productService}
 
 	app.Post("/products", productController.CreateProduct)

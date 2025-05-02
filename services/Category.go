@@ -2,7 +2,8 @@ package services
 
 import (
 	"errors"
-	"github.com/Ewan-Reveille/retech/internal/models"
+
+	"github.com/Ewan-Reveille/retech/models"
 	"github.com/google/uuid"
 )
 

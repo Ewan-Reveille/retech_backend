@@ -1,9 +1,9 @@
 package routes
 
 import (
-	"github.com/Ewan-Reveille/retech/internal/controllers"
-	"github.com/Ewan-Reveille/retech/internal/models"
-	"github.com/Ewan-Reveille/retech/internal/services"
+	"github.com/Ewan-Reveille/retech/controllers"
+	"github.com/Ewan-Reveille/retech/models"
+	"github.com/Ewan-Reveille/retech/services"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )

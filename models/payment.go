@@ -6,13 +6,29 @@ import (
 	"github.com/google/uuid"
 )
 
+type PaymentMethod string
+type PaymentStatus string
+
+const (
+	MethodPaypal PaymentMethod = "paypal"
+	MethodCard   PaymentMethod = "card"
+	MethodCrypto PaymentMethod = "crypto"
+)
+
+const (
+	StatusPending   PaymentStatus = "pending"
+	StatusChecked PaymentStatus = "checked"
+	StatusFailed    PaymentStatus = "failed"
+)
+
 type Payment struct {
 	gorm.Model
-	ID      uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	OrderID uuid.UUID
-	Method  string // enum: card, crypto, etc.
-	Status  string // enum: checked, failed
-
+	PaymentID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	UserID   uuid.UUID
+	Amount    float64
+	OrderID   uuid.UUID
+	Method    PaymentMethod
+	Status    PaymentStatus
 	CreatedAt time.Time
 }
 
@@ -46,6 +62,14 @@ func (pm *PaymentModel) GetByOrderID(orderID uuid.UUID) (*Payment, error) {
 		return nil, err
 	}
 	return &payment, nil
+}
+
+func (pm *PaymentModel) GetByUserID(userID uuid.UUID) ([]Payment, error) {
+	var payments []Payment
+	if err := pm.DB.Where("user_id = ?", userID).Find(&payments).Error; err != nil {
+		return nil, err
+	}
+	return payments, nil
 }
 
 func (pm *PaymentModel) Update(payment *Payment) error {

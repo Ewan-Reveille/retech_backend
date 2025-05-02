@@ -1,8 +1,9 @@
 package test
 
 import (
+	"github.com/Ewan-Reveille/retech/models"
+	"github.com/Ewan-Reveille/retech/routes"
 	"github.com/gofiber/fiber/v2"
-	"github.com/Ewan-Reveille/retech/internal/routes"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )

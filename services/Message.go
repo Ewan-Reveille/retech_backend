@@ -2,7 +2,8 @@ package services
 
 import (
 	"errors"
-	"github.com/Ewan-Reveille/retech/internal/models"
+
+	"github.com/Ewan-Reveille/retech/models"
 	"github.com/google/uuid"
 )
 
@@ -47,7 +48,7 @@ func (ms *MessageService) GetByReceiverID(receiverID uuid.UUID) ([]models.Messag
 }
 
 func (ms *MessageService) Update(message *models.Message) error {
-	
+
 	existing, err := ms.Repo.GetByID(message.ID)
 	if err != nil {
 		return err

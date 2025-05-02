@@ -2,7 +2,8 @@ package services
 
 import (
 	"errors"
-	"github.com/Ewan-Reveille/retech/internal/models"
+
+	"github.com/Ewan-Reveille/retech/models"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +18,7 @@ func (os *OrderService) Create(order *models.Order) error {
 	if order.ProductID == uuid.Nil {
 		return errors.New("product ID cannot be empty")
 	}
-	
+
 	order.ID = uuid.New() // ⬅️ Remplace utils.GenerateUUID()
 	return os.Repo.Create(order)
 }
@@ -69,7 +70,6 @@ func (os *OrderService) Update(order *models.Order) error {
 
 	return os.Repo.Update(order)
 }
-
 
 func (os *OrderService) Delete(id uuid.UUID) error {
 	order, err := os.Repo.GetByID(id)

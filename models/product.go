@@ -12,7 +12,7 @@ type Product struct {
 	Title       string
 	Description string
 	Price       float64
-	Status      string // enum: online, sold, deleted, pending
+	Status      string
 
 	SellerID uuid.UUID
 	Seller   User
@@ -25,6 +25,9 @@ type Product struct {
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
+
+	StripeProductID string
+	StripePriceID   string
 
 	Images     []ProductImage
 	Promotions []Promotion
