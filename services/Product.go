@@ -62,6 +62,26 @@ func (ps *ProductService) GetByID(id uuid.UUID) (*models.Product, error) {
 	return ps.Repo.GetByID(id)
 }
 
+func (ps *ProductService) GetAll() ([]models.Product, error) {
+    products, err := ps.Repo.GetAll()
+    if err != nil {
+        return nil, err
+    }
+
+    for i := range products {
+        // Fetch Stripe product details
+        stripeProduct, err := product.Get(products[i].StripeProductID, nil)
+        if err != nil {
+            return nil, err
+        }
+        products[i].Title = stripeProduct.Name
+        products[i].Description = stripeProduct.Description
+    }
+
+    return products, nil
+}
+
+
 func (ps *ProductService) Update(product *models.Product) error {
 	existing, err := ps.Repo.GetByID(product.ID)
 	if err != nil {

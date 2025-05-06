@@ -54,6 +54,16 @@ func (pc *ProductController) GetProduct(c *fiber.Ctx) error {
 	return c.JSON(product)
 }
 
+func (pc *ProductController) GetAllProducts(c *fiber.Ctx) error {
+
+	products, err := pc.ProductService.GetAll()
+	if err != nil {
+		return c.Status(fiber.StatusInternalServerError).SendString("Failed to retrieve products")
+	}
+
+	return c.JSON(products)
+}
+
 // PUT /products/:id
 func (pc *ProductController) UpdateProduct(c *fiber.Ctx) error {
 	idStr := c.Params("id")

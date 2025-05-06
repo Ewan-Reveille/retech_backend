@@ -15,6 +15,7 @@ func RegisterProductRoutes(app fiber.Router, db *gorm.DB) {
 
 	app.Post("/products", productController.CreateProduct)
 	app.Get("/products/:id", productController.GetProduct)
+	app.Get("/products", productController.GetAllProducts)
 	app.Put("/products/:id", productController.UpdateProduct)
 	app.Delete("/products/:id", productController.DeleteProduct)
 }

@@ -35,10 +35,10 @@ func main() {
 	// Run migrations
 	db.Migrate(DB)
 	routes.RegisterProductRoutes(app, DB)
+	routes.RegisterUserRoutes(app, DB)
 	// Connect to DB (assuming db.Connect() is for keeping the DB connection alive)
 	db.Connect()
 
-	// Initialize Fiber app
 
 	// Enable CORS middleware
 	app.Use(cors.New())
@@ -48,8 +48,6 @@ func main() {
 		log.Println("ReTech API status: launched 🚀")
 		return c.SendString("ReTech API status: launched 🚀")
 	})
-
-	routes.RegisterProductRoutes(app, DB)
 
 	// Start the server on the specified port
 	port := os.Getenv("PORT")

@@ -37,6 +37,7 @@ type Product struct {
 type ProductRepository interface {
 	Create(product *Product) error
 	GetByID(id uuid.UUID) (*Product, error)
+	GetAll() ([]Product, error)
 	Update(product *Product) error
 	Delete(id uuid.UUID) error
 }
@@ -55,6 +56,14 @@ func (pm *ProductModel) GetByID(id uuid.UUID) (*Product, error) {
 		return nil, err
 	}
 	return &product, nil
+}
+
+func (pm *ProductModel) GetAll() ([]Product, error) {
+	var products []Product
+	if err := pm.DB.Preload("Seller").Preload("Category").Preload("Condition").Preload("Images").Preload("Promotions").Find(&products).Error; err != nil {
+		return nil, err
+	}
+	return products, nil
 }
 
 func (pm *ProductModel) Update(product *Product) error {
