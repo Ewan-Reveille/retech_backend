@@ -33,7 +33,7 @@ func main() {
 
 	app := fiber.New()
 	// Run migrations
-	db.Migrate(DB)
+	// db.Migrate(DB)
 	routes.RegisterProductRoutes(app, DB)
 	routes.RegisterUserRoutes(app, DB)
 	// Connect to DB (assuming db.Connect() is for keeping the DB connection alive)
@@ -52,7 +52,7 @@ func main() {
 	// Start the server on the specified port
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "3000" // Default to port 3000 if not provided
+		port = "8080" // Default to port 8080 if not provided
 	}
 	log.Fatal(app.Listen(":" + port))
 }
