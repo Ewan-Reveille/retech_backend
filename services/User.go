@@ -18,6 +18,11 @@ type CreateUserRequest struct {
 	Password    string `json:"password" binding:"required,min=8"`
 }
 
+type LoginRequest struct {
+	Username string `json:"username" binding:"required"`
+	Password string `json:"password" binding:"required"`
+}
+
 func (us *UserService) Create(req *CreateUserRequest) (*models.User, error) {
 	if req.Username == "" || req.Email == "" || req.Password == "" {
         return nil, errors.New("tous les champs sont requis")
@@ -38,6 +43,20 @@ func (us *UserService) Create(req *CreateUserRequest) (*models.User, error) {
 	if err := us.Repo.Create(user); err != nil {
 		return nil, fmt.Errorf("échec création User: %w", err)
 	}
+	user.Password = ""
+	return user, nil
+}
+
+func (us *UserService) Login(req *LoginRequest) (*models.User, error) {
+	user, err := us.Repo.GetByUsername(req.Username)
+	if err != nil {
+		return nil, errors.New("identifiants invalides")
+	}
+
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(req.Password)); err != nil {
+		return nil, errors.New("identifiants invalides")
+	}
+
 	user.Password = ""
 	return user, nil
 }

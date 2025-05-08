@@ -15,3 +15,11 @@ func RegisterUserRoutes(app fiber.Router, db *gorm.DB) {
 
 	app.Post("/register", userController.CreateUser)
 }
+
+func LoginUserRoutes(app fiber.Router, db *gorm.DB) {
+	userModel := &models.UserModel{DB: db}
+	userService := &services.UserService{Repo: userModel}
+	userController := &controllers.UserController{UserService: userService}
+
+	app.Post("/login", userController.Login)
+}

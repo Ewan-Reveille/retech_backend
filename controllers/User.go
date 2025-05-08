@@ -40,19 +40,19 @@ func (uc *UserController) CreateUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(user)
 }
 
-// func (uc *UserController) Login(c *fiber.Ctx) error {
-// 	var req services.LoginRequest
-// 	if err := c.BodyParser(&req); err != nil {
-// 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid body"})
-// 	}
+func (uc *UserController) Login(c *fiber.Ctx) error {
+	var req services.LoginRequest
+	if err := c.BodyParser(&req); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid body"})
+	}
 
-// 	user, err := uc.UserService.Login(&req)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
-// 	}
+	user, err := uc.UserService.Login(&req)
+	if err != nil {
+		return c.Status(fiber.StatusUnauthorized).JSON(fiber.Map{"error": "Invalid credentials"})
+	}
 
-// 	return c.JSON(user)
-// }
+	return c.JSON(user)
+}
 
 // func (uc *UserController) GetProfile(c *fiber.Ctx) error {
 // 	userID := c.Locals("userID").(string)
