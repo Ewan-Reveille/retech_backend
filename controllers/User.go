@@ -4,6 +4,8 @@ import (
 	"github.com/Ewan-Reveille/retech/services"
 	"github.com/gofiber/fiber/v2"
 	"strings"
+	"github.com/google/uuid"
+	"log"
 )
 
 type UserController struct {
@@ -12,8 +14,8 @@ type UserController struct {
 
 func (uc *UserController) RegisterRoutes(router fiber.Router) {
 	router.Post("/register", uc.CreateUser)
-	// router.Post("/login", uc.Login)
-	// router.Get("/profile", uc.GetProfile)
+	router.Post("/login", uc.Login)
+	router.Get("/user", uc.GetAllUsers)
 }
 
 func (uc *UserController) CreateUser(c *fiber.Ctx) error {
@@ -24,13 +26,13 @@ func (uc *UserController) CreateUser(c *fiber.Ctx) error {
 
 	user, err := uc.UserService.Create(&req)
 	if err != nil {
-		// si conflit clé unique
+
 		if strings.Contains(err.Error(), "duplicate key") {
 			return c.Status(fiber.StatusConflict).JSON(fiber.Map{
 				"error": "username ou email déjà utilisé",
 			})
 		}
-		// sinon on affiche l’erreur détaillée
+
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": err.Error(),
 		})
@@ -54,12 +56,32 @@ func (uc *UserController) Login(c *fiber.Ctx) error {
 	return c.JSON(user)
 }
 
-// func (uc *UserController) GetProfile(c *fiber.Ctx) error {
-// 	userID := c.Locals("userID").(string)
-// 	user, err := uc.UserService.GetProfile(userID)
-// 	if err != nil {
-// 		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "User not found"})
-// 	}
+type UserResponse struct {
+	ID       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Email    string    `json:"email"`
+	IsSeller bool      `json:"isSeller"`
+}
 
-// 	return c.JSON(user)
-// }
+
+func (uc *UserController) GetAllUsers(c *fiber.Ctx) error {
+    log.Println("[GetAllUsers] début")
+    users, err := uc.UserService.GetAll()
+    if err != nil {
+        log.Printf("[GetAllUsers] erreur service.GetAll(): %v\n", err)
+        return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to fetch users"})
+    }
+    log.Printf("[GetAllUsers] service.GetAll() a renvoyé %d users\n", len(users))
+
+    var response []UserResponse
+    for _, user := range users {
+        response = append(response, UserResponse{
+            ID:       user.ID,
+            Username: user.Username,
+            Email:    user.Email,
+            IsSeller: user.IsSeller,
+        })
+    }
+    log.Printf("[GetAllUsers] renvoi réponse JSON: %+v\n", response)
+    return c.JSON(response)
+}

@@ -36,6 +36,8 @@ func main() {
 	// db.Migrate(DB)
 	routes.RegisterProductRoutes(app, DB)
 	routes.RegisterUserRoutes(app, DB)
+	routes.RegisterCategoryRoutes(app, DB)
+	routes.RegisterOrderRoutes(app, DB)
 	// Connect to DB (assuming db.Connect() is for keeping the DB connection alive)
 	db.Connect()
 
@@ -53,6 +55,9 @@ func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "8080" // Default to port 8080 if not provided
+	}
+	for _, r := range app.GetRoutes() {
+		log.Printf("Route registered: %s %s", r.Method, r.Path)
 	}
 	log.Fatal(app.Listen(":" + port))
 }

@@ -6,6 +6,7 @@ import (
 	"github.com/Ewan-Reveille/retech/models"
 	"github.com/google/uuid"
 	"fmt"
+	"log"
 )
 
 type UserService struct {
@@ -59,4 +60,15 @@ func (us *UserService) Login(req *LoginRequest) (*models.User, error) {
 
 	user.Password = ""
 	return user, nil
+}
+
+func (us *UserService) GetAll() ([]models.User, error) {
+    log.Println("[UserService.GetAll] début")
+    users, err := us.Repo.GetAll()
+    if err != nil {
+        log.Printf("[UserService.GetAll] erreur Repo.GetAll(): %v\n", err)
+        return nil, fmt.Errorf("échec récupération Users: %w", err)
+    }
+    log.Printf("[UserService.GetAll] Repo.GetAll() a renvoyé %d users\n", len(users))
+    return users, nil
 }

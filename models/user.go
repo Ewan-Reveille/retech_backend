@@ -4,10 +4,12 @@ import (
 	"time"
 	"gorm.io/gorm"
 	"github.com/google/uuid"
+	"log"
 )
 
 type User struct {
 	gorm.Model
+	// ID          uuid.UUID `gorm:"type:char(36);primaryKey"` // Tests uniquement
 	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	Username    string    `gorm:"uniqueIndex"`
 	Email       string    `gorm:"uniqueIndex"`
@@ -23,11 +25,11 @@ type User struct {
 	UpdatedAt time.Time
 
 	Products         []Product `gorm:"foreignKey:SellerID"`
-	Orders           []Order   `gorm:"foreignKey:BuyerID"`
-	Reviews          []Review  `gorm:"foreignKey:ReviewerID"`
-	MessagesSent     []Message `gorm:"foreignKey:SenderID"`
-	MessagesReceived []Message `gorm:"foreignKey:ReceiverID"`
-	Reports          []Report  `gorm:"foreignKey:ReporterID"`
+	// Orders           []Order   `gorm:"foreignKey:BuyerID"`
+	// Reviews          []Review  `gorm:"foreignKey:ReviewerID"`
+	// MessagesSent     []Message `gorm:"foreignKey:SenderID"`
+	// MessagesReceived []Message `gorm:"foreignKey:ReceiverID"`
+	// Reports          []Report  `gorm:"foreignKey:ReporterID"`
 }
 
 type UserRepository interface {
@@ -51,7 +53,8 @@ func (um *UserModel) Create(user *User) error {
 
 func (um *UserModel) GetByID(id uuid.UUID) (*User, error) {
 	var user User
-	if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").First(&user, "id = ?", id).Error; err != nil {
+	// if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").First(&user, "id = ?", id).Error; err != nil {
+	if err := um.DB.First(&user, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -59,15 +62,18 @@ func (um *UserModel) GetByID(id uuid.UUID) (*User, error) {
 
 func (um *UserModel) GetByUsername(username string) (*User, error) {
 	var user User
-	if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").First(&user, "username = ?", username).Error; err != nil {
+	// if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").First(&user, "username = ?", username).Error; err != nil {
+	if err := um.DB.First(&user, "username = ?", username).Error; err != nil {
 		return nil, err
 	}
+	log.Printf("[UserModel.GetByUsername] trouvé: %+v\n", user)
 	return &user, nil
 }
 
 func (um *UserModel) GetByEmail(email string) (*User, error) {
 	var user User
-	if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").First(&user, "email = ?", email).Error; err != nil {
+	// if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").First(&user, "email = ?", email).Error; err != nil {
+	if err := um.DB.First(&user, "email = ?", email).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -75,7 +81,8 @@ func (um *UserModel) GetByEmail(email string) (*User, error) {
 
 func (um *UserModel) GetByPhoneNumber(phoneNumber string) (*User, error) {
 	var user User
-	if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").First(&user, "phone_number = ?", phoneNumber).Error; err != nil {
+	// if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").First(&user, "phone_number = ?", phoneNumber).Error; err != nil {
+	if err := um.DB.First(&user, "phoneNumber = ?", phoneNumber).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -90,10 +97,14 @@ func (um *UserModel) Delete(id uuid.UUID) error {
 }
 
 func (um *UserModel) GetAll() ([]User, error) {
-	var users []User
-	if err := um.DB.Preload("Products").Preload("Orders").Preload("Reviews").Preload("MessagesSent").Preload("MessagesReceived").Preload("Reports").Find(&users).Error; err != nil {
-		return nil, err
-	}
-	return users, nil
+    log.Println("[UserModel.GetAll] début")
+    var users []User
+    err := um.DB.Find(&users).Error
+    if err != nil {
+        log.Printf("[UserModel.GetAll] erreur DB.Find(): %v\n", err)
+        return nil, err
+    }
+    log.Printf("[UserModel.GetAll] DB.Find() a renvoyé %d users\n", len(users))
+    return users, nil
 }
 

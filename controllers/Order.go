@@ -20,13 +20,18 @@ func (oc *OrderController) CreateOrder(c *fiber.Ctx) error {
 		})
 	}
 
-	if err := oc.OrderService.Create(&order); err != nil {
+	orderResult, clientSecret, err := oc.OrderService.CreateWithStripe(order.BuyerID, order.ProductID, order.ProductID)
+	if err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create order",
 		})
 	}
 
-	return c.Status(fiber.StatusCreated).JSON(order)
+	// Tu peux aussi renvoyer le `clientSecret` dans ta réponse :
+	return c.Status(fiber.StatusCreated).JSON(fiber.Map{
+		"order":         orderResult,
+		"client_secret": clientSecret,
+	})
 }
 
 // GET /orders/:id

@@ -1,38 +1,47 @@
 package models
 
 import (
-	"time"
-	"gorm.io/gorm"
 	"github.com/google/uuid"
+	"gorm.io/gorm"
+	"time"
+)
+
+type productionCondition string
+
+const (
+	NEW       productionCondition = "new"
+	VERY_GOOD productionCondition = "very good"
+	GOOD      productionCondition = "good"
+	USED      productionCondition = "used"
+	FAIR      productionCondition = "fair"
+	UNKNOWN   productionCondition = "unknown"
 )
 
 type Product struct {
 	gorm.Model
 	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	Title       string
-	Description string
-	Price       float64
-	Status      string
+	Title       string    `json:"title"`
+	Description string    `json:"description"`
+	Price       float64   `json:"price"`
+	Status      string    `json:"status,omitempty"`
 
-	SellerID uuid.UUID
-	Seller   User
+	SellerID uuid.UUID `json:"seller_id"`
+	Seller   User      `json:"-"`
 
-	CategoryID uuid.UUID
-	Category   Category
+	Condition string `json:"condition"`
 
-	ConditionID uuid.UUID
-	Condition   ProductCondition
+	CategoryID uuid.UUID `json:"category_id"`
+	Category   Category  `json:"-"`
+
+	StripeProductID string `json:"-"`
+	StripePriceID   string `json:"-"`
+
+	Images     []ProductImage `json:"-"`
+	Promotions []Promotion    `json:"-"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
-
-	StripeProductID string
-	StripePriceID   string
-
-	Images     []ProductImage
-	Promotions []Promotion
 }
-
 
 type ProductRepository interface {
 	Create(product *Product) error
@@ -52,7 +61,7 @@ func (pm *ProductModel) Create(product *Product) error {
 
 func (pm *ProductModel) GetByID(id uuid.UUID) (*Product, error) {
 	var product Product
-	if err := pm.DB.Preload("Seller").Preload("Category").Preload("Condition").Preload("Images").Preload("Promotions").First(&product, "id = ?", id).Error; err != nil {
+	if err := pm.DB.Preload("Seller").Preload("Category").Preload("Images").Preload("Promotions").First(&product, "id = ?", id).Error; err != nil {
 		return nil, err
 	}
 	return &product, nil
@@ -60,7 +69,7 @@ func (pm *ProductModel) GetByID(id uuid.UUID) (*Product, error) {
 
 func (pm *ProductModel) GetAll() ([]Product, error) {
 	var products []Product
-	if err := pm.DB.Preload("Seller").Preload("Category").Preload("Condition").Preload("Images").Preload("Promotions").Find(&products).Error; err != nil {
+	if err := pm.DB.Preload("Seller").Preload("Category").Preload("Images").Preload("Promotions").Find(&products).Error; err != nil {
 		return nil, err
 	}
 	return products, nil

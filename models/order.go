@@ -9,11 +9,12 @@ import (
 type Order struct {
 	gorm.Model
 	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
-	BuyerID    uuid.UUID
-	ProductID  uuid.UUID
-	PaymentID  uuid.UUID
-	ShippingID uuid.UUID
-	Status     string // pending, paid, shipped, received, canceled, dispute
+	BuyerID    uuid.UUID `json:"buyer_id"`
+	ProductID  uuid.UUID `json:"product_id"`
+	PaymentID  uuid.UUID `json:"payment_id"`
+	ShippingID uuid.UUID `json:"shipping_id"`
+	Status     string    `json:"status"`
+	Commission  float64   `json:"commission"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -28,7 +29,7 @@ type OrderRepository interface {
 	Create(order *Order) error
 	GetByID(id uuid.UUID) (*Order, error)
 	GetByBuyerID(buyerID uuid.UUID) ([]Order, error)
-	GetBySellerId(buyerID uuid.UUID) ([]Order, error)
+	// GetBySellerId(buyerID uuid.UUID) ([]Order, error)
 	GetByProductID(productID uuid.UUID) ([]Order, error)
 	GetByPaymentID(paymentID uuid.UUID) ([]Order, error)
 	GetByShippingID(shippingID uuid.UUID) ([]Order, error)

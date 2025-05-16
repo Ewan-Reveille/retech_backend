@@ -23,7 +23,6 @@ func (ps *ProductService) Create(p *models.Product) error {
 
     // Start transaction
     return ps.DB.Transaction(func(tx *gorm.DB) error {
-        // 1) Create Stripe product
         spParams := &stripe.ProductParams{
             Name:        stripe.String(p.Title),
             Description: stripe.String(p.Description),
@@ -33,7 +32,6 @@ func (ps *ProductService) Create(p *models.Product) error {
             return err
         }
 
-        // 2) Create Stripe price (in cents)
         priceParams := &stripe.PriceParams{
             UnitAmount: stripe.Int64(int64(p.Price * 100)),
             Currency:   stripe.String("eur"),
@@ -44,11 +42,9 @@ func (ps *ProductService) Create(p *models.Product) error {
             return err
         }
 
-        // 3) Fill in Stripe IDs
         p.StripeProductID = stripeProd.ID
         p.StripePriceID   = stripePriceObj.ID
 
-        // 4) Persist your own Product
         if err := ps.Repo.Create(p); err != nil {
             return err
         }
