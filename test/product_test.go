@@ -10,6 +10,8 @@ import (
 	"testing"
 
 	"github.com/Ewan-Reveille/retech/models"
+	"github.com/Ewan-Reveille/retech/controllers"
+	"github.com/Ewan-Reveille/retech/services"
 	"github.com/Ewan-Reveille/retech/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
@@ -35,6 +37,7 @@ func TestProductController_CreateProduct(t *testing.T) {
 	db := SetupTestDB(t)
 	defer TeardownTestDB(db)
 
+	userModel := &models.UserModel{DB: db}
 	// --- ADD TABLE CREATION HERE ---
 	// Manually create tables with SQLite-compatible syntax for this test
 	db.Exec(`CREATE TABLE IF NOT EXISTS users (
@@ -81,11 +84,19 @@ func TestProductController_CreateProduct(t *testing.T) {
 		deleted_at DATETIME,
 		FOREIGN KEY(product_id) REFERENCES products(id)
 	)`)
-	// --- END ADDITION ---
-
-
-	app := fiber.New()
 	mockStripe := &MockStripeClient{} // Create an instance of your mock
+	// --- END ADDITION ---
+	productService := &services.ProductService{
+		DB:          db,
+		StripeClient: mockStripe,
+	}
+
+	productController := &controllers.ProductController{
+        ProductService: productService,
+        UserModel:      userModel, // Add this line
+    }
+	app := fiber.New()
+	app.Post("/products", productController.CreateProduct)
 	routes.RegisterProductRoutes(app, db, mockStripe) // Pass the mock here
 
 	// Create required entities
