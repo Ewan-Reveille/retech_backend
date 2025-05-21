@@ -15,6 +15,7 @@ import (
 
 type ProductController struct {
 	ProductService *services.ProductService
+	UserModel      *models.UserModel
 }
 
 func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
@@ -22,6 +23,19 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to parse form"})
 	}
+
+	username := c.Get("X-User-Username")
+	if username == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "X-User-Username header is required"})
+	}
+
+	user, err := pc.UserModel.GetByUsername(username)
+	if err != nil {
+		log.Printf("error fetching user by username: %v", err)
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid user"})
+	}
+
+	sellerID := user.ID
 	// 1. Parse form fields
 	values := form.Value
 	title := getFirstValue(values, "title")
@@ -55,10 +69,10 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	}
 
 	// Parse seller ID
-	sellerID, err := uuid.Parse(sellerIDStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid seller_id format"})
-	}
+	// sellerID, err := uuid.Parse(sellerIDStr)
+	// if err != nil {
+	// 	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid seller_id format"})
+	// }
 
 	// Ensure upload directory exists
 	uploadDir := "./uploads"
