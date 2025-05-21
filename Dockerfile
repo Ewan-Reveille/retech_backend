@@ -32,6 +32,9 @@ COPY seed_categories.sh .
 
 RUN chmod +x seed_categories.sh
 
+RUN useradd -m -d /home/appuser -s /bin/bash appuser
+USER appuser
+
 # Expose application port
 EXPOSE 8080
 
