@@ -19,6 +19,7 @@ type ProductController struct {
 }
 
 func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
+
 	form, err := c.MultipartForm()
 	if err != nil {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to parse form"})

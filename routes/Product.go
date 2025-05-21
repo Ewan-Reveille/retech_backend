@@ -11,7 +11,11 @@ import (
 func RegisterProductRoutes(app fiber.Router, db *gorm.DB, stripeClient services.StripeClient) {
 	productModel := &models.ProductModel{DB: db}
 	productService := &services.ProductService{Repo: productModel, DB: db, StripeClient: stripeClient}
-	productController := &controllers.ProductController{ProductService: productService}
+	userModel := &models.UserModel{DB: db}
+	productController := &controllers.ProductController{
+        ProductService: productService,
+        UserModel:      userModel,
+    }
 
 	app.Post("/products", productController.CreateProduct)
 	app.Get("/products/:id", productController.GetProduct)
