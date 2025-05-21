@@ -8,7 +8,8 @@ import (
 
 type Shipping struct {
 	gorm.Model
-	ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	// ID             uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Carrier        string
 	TrackingNumber string
 	Status         string // prepared, shipped, transit, delivered

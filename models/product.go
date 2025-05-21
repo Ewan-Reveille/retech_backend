@@ -19,7 +19,8 @@ const (
 
 type Product struct {
 	gorm.Model
-	ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	// ID          uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID          uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Title       string    `json:"title"`
 	Description string    `json:"description"`
 	Price       float64   `json:"price"`
@@ -30,7 +31,7 @@ type Product struct {
 
 	Condition string `json:"condition"`
 
-	CategoryID uuid.UUID `json:"category_id"`
+	CategoryID uuid.UUID `json:"category"`
 	Category   Category  `json:"-"`
 
 	StripeProductID string `json:"-"`

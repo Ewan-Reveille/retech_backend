@@ -8,9 +8,9 @@ import (
 	"gorm.io/gorm"
 )
 
-func RegisterProductRoutes(app fiber.Router, db *gorm.DB) {
+func RegisterProductRoutes(app fiber.Router, db *gorm.DB, stripeClient services.StripeClient) {
 	productModel := &models.ProductModel{DB: db}
-	productService := &services.ProductService{Repo: productModel, DB: db}
+	productService := &services.ProductService{Repo: productModel, DB: db, StripeClient: stripeClient}
 	productController := &controllers.ProductController{ProductService: productService}
 
 	app.Post("/products", productController.CreateProduct)

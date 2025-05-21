@@ -2,13 +2,15 @@ package models
 
 import (
 	"time"
-	"gorm.io/gorm"
+
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Report struct {
 	gorm.Model
-	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	// ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID         uuid.UUID `gorm:"type:uuid;primaryKey"`
 	ReporterID uuid.UUID
 	ReportedID uuid.UUID
 	Reason     string

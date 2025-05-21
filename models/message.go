@@ -2,13 +2,16 @@ package models
 
 import (
 	"time"
-	"gorm.io/gorm"
+
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Message struct {
 	gorm.Model
-	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	// // ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID uuid.UUID `gorm:"type:uuid;primaryKey"`
+
 	SenderID   uuid.UUID
 	ReceiverID uuid.UUID
 	Content    string
@@ -71,4 +74,3 @@ func (mm *MessageModel) Delete(id uuid.UUID) error {
 	}
 	return mm.DB.Delete(&message).Error
 }
-

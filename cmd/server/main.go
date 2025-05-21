@@ -11,6 +11,7 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v81"
+	"github.com/Ewan-Reveille/retech/services"
 )
 
 func main() {
@@ -32,9 +33,11 @@ func main() {
 	}
 
 	app := fiber.New()
+
+	realStripeClient := &services.StripeClientImpl{}
 	// Run migrations
 	// db.Migrate(DB)
-	routes.RegisterProductRoutes(app, DB)
+	routes.RegisterProductRoutes(app, DB, realStripeClient)
 	routes.RegisterUserRoutes(app, DB)
 	routes.RegisterCategoryRoutes(app, DB)
 	routes.RegisterOrderRoutes(app, DB)

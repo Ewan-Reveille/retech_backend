@@ -2,19 +2,21 @@ package models
 
 import (
 	"time"
-	"gorm.io/gorm"
+
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type Order struct {
 	gorm.Model
-	ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	// ID         uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID         uuid.UUID `gorm:"type:uuid;primaryKey"`
 	BuyerID    uuid.UUID `json:"buyer_id"`
 	ProductID  uuid.UUID `json:"product_id"`
 	PaymentID  uuid.UUID `json:"payment_id"`
 	ShippingID uuid.UUID `json:"shipping_id"`
 	Status     string    `json:"status"`
-	Commission  float64   `json:"commission"`
+	Commission float64   `json:"commission"`
 
 	CreatedAt time.Time
 	UpdatedAt time.Time

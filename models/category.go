@@ -7,7 +7,8 @@ import (
 
 type Category struct {
 	gorm.Model
-	ID   uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	// ID   uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	ID   uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name string    `gorm:"unique"`
 
 	Products []Product

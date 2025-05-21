@@ -23,7 +23,8 @@ const (
 
 type Payment struct {
 	gorm.Model
-	PaymentID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	// PaymentID uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
+	PaymentID          uuid.UUID `gorm:"type:uuid;primaryKey"`
 	UserID   uuid.UUID
 	Amount    float64
 	OrderID   uuid.UUID
