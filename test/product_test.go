@@ -120,7 +120,7 @@ func TestProductController_CreateProduct(t *testing.T) {
 	_ = writer.WriteField("description", "Test Description")
 	_ = writer.WriteField("price", "99.99")
 	_ = writer.WriteField("category", category.ID.String())
-	_ = writer.WriteField("seller_id", seller.ID.String())
+	_ = writer.WriteField("seller_id", "test1")
 	_ = writer.WriteField("condition", "new")
 
 	// Add image file
