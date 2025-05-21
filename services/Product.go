@@ -9,7 +9,7 @@ import (
 	"github.com/stripe/stripe-go/v81/product"
 	"gorm.io/gorm"
 
-	// "log"
+	"log"
 )
 type StripeClientImpl struct{}
 
@@ -33,37 +33,52 @@ type ProductService struct {
 }
 
 // services/Product.go
-func (ps *ProductService) Create(p *models.Product) error {
-    if p.Title == "" || p.Price <= 0 {
-        return errors.New("invalid title or price")
-    }
+// services/Product.go
+func (s *ProductService) Create(product *models.Product) error {
+	log.Println("[ProductService.Create] Starting transaction")
+	
+	return s.DB.Transaction(func(tx *gorm.DB) error {
+		// 1. Create Stripe Product
+		log.Printf("[ProductService.Create] Creating Stripe product, service: %+v", s)
+		if s.StripeClient == nil {
+			log.Fatal("[ProductService.Create] StripeClient is nil!")
+		}
+		
+		stripeProduct, err := s.StripeClient.NewProduct(&stripe.ProductParams{
+			Name: stripe.String(product.Title),
+		})
+		if err != nil {
+			log.Printf("[ProductService.Create] Stripe product error: %v", err)
+			return err
+		}
+		log.Printf("[ProductService.Create] Created Stripe product: %s", stripeProduct.ID)
 
-    return ps.DB.Transaction(func(tx *gorm.DB) error {
-        // Use the injected Stripe client
-        stripeProd, err := ps.StripeClient.NewProduct(&stripe.ProductParams{
-            Name:        stripe.String(p.Title),
-            Description: stripe.String(p.Description),
-        })
-        if err != nil {
-            return err
-        }
+		// 2. Create Stripe Price
+		log.Printf("[ProductService.Create] Creating Stripe price for product %s", stripeProduct.ID)
+		stripePrice, err := s.StripeClient.NewPrice(&stripe.PriceParams{
+			Product:    stripe.String(stripeProduct.ID),
+			UnitAmount: stripe.Int64(int64(product.Price * 100)),
+			Currency:   stripe.String("eur"),
+		})
+		if err != nil {
+			log.Printf("[ProductService.Create] Stripe price error: %v", err)
+			return err
+		}
+		log.Printf("[ProductService.Create] Created Stripe price: %s", stripePrice.ID)
 
-        priceParams := &stripe.PriceParams{
-            UnitAmount: stripe.Int64(int64(p.Price * 100)),
-            Currency:   stripe.String("eur"),
-            Product:    stripe.String(stripeProd.ID),
-        }
-        
-        stripePriceObj, err := ps.StripeClient.NewPrice(priceParams)
-        if err != nil {
-            return err
-        }
-
-        p.StripeProductID = stripeProd.ID
-        p.StripePriceID = stripePriceObj.ID
-
-        return ps.Repo.Create(p)
-    })
+		// 3. Save to DB
+		log.Println("[ProductService.Create] Saving product to database")
+		product.StripeProductID = stripeProduct.ID
+		product.StripePriceID = stripePrice.ID
+		
+		if err := tx.Create(product).Error; err != nil {
+			log.Printf("[ProductService.Create] Database save error: %v", err)
+			return err
+		}
+		log.Printf("[ProductService.Create] Product saved successfully. ID: %s", product.ID)
+		
+		return nil
+	})
 }
 
 func (ps *ProductService) GetByID(id uuid.UUID) (*models.Product, error) {

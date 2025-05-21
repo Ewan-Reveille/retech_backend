@@ -42,7 +42,6 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	description := getFirstValue(values, "description")
 	priceStr := getFirstValue(values, "price")
 	categoryIDStr := getFirstValue(values, "category")
-	sellerIDStr := getFirstValue(values, "seller_id")
 	condition := getFirstValue(values, "condition")
 
 	price, err := strconv.ParseFloat(priceStr, 64)
@@ -64,8 +63,8 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	}
 
 	// Validate required fields
-	if title == "" || description == "" || categoryIDStr == "" || sellerIDStr == "" {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "title, description, category, and seller_id are required"})
+	if title == "" || description == "" || categoryIDStr == "" {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "title, description, and category, are required"})
 	}
 
 	// Parse seller ID
