@@ -12,7 +12,7 @@ import (
 	"github.com/Ewan-Reveille/retech/models"
 	"github.com/Ewan-Reveille/retech/controllers"
 	"github.com/Ewan-Reveille/retech/services"
-	"github.com/Ewan-Reveille/retech/routes"
+	// "github.com/Ewan-Reveille/retech/routes"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -97,7 +97,7 @@ func TestProductController_CreateProduct(t *testing.T) {
     }
 	app := fiber.New()
 	app.Post("/products", productController.CreateProduct)
-	routes.RegisterProductRoutes(app, db, mockStripe) // Pass the mock here
+	// routes.RegisterProductRoutes(app, db, mockStripe) // Pass the mock here
 
 	// Create required entities
 	seller := models.User{
