@@ -28,8 +28,15 @@ USER appuser
 WORKDIR /home/appuser
 COPY --from=builder /app/server ./server
 COPY .env .
+COPY seed_categories.sh .
+
+RUN chmod +x seed_categories.sh
+
+RUN useradd -m -d /home/appuser -s /bin/bash appuser
+USER appuser
+
 # Expose application port
 EXPOSE 8080
 
 # Default command
-ENTRYPOINT ["./server"]
+ENTRYPOINT ["sh", "-c", "./seed_categories.sh && exec ./server"]

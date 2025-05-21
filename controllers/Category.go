@@ -20,6 +20,10 @@ func (cc *CategoryController) CreateCategory(c *fiber.Ctx) error {
 		})
 	}
 
+	if category.ID == uuid.Nil {
+		category.ID = uuid.New()
+	}
+
 	if err := cc.CategoryService.Create(&category); err != nil {
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
 			"error": "Failed to create category",
