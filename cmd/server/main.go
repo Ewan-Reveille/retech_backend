@@ -7,11 +7,11 @@ import (
 	"github.com/Ewan-Reveille/retech/config"
 	"github.com/Ewan-Reveille/retech/db"
 	"github.com/Ewan-Reveille/retech/routes"
+	"github.com/Ewan-Reveille/retech/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/joho/godotenv"
 	"github.com/stripe/stripe-go/v81"
-	"github.com/Ewan-Reveille/retech/services"
 )
 
 func main() {
@@ -44,9 +44,13 @@ func main() {
 	// Connect to DB (assuming db.Connect() is for keeping the DB connection alive)
 	db.Connect()
 
-
 	// Enable CORS middleware
-	app.Use(cors.New())
+	app.Use(cors.New(cors.Config{
+		AllowOrigins:     "*",
+		AllowMethods:     "GET,POST,PUT,DELETE,OPTIONS",
+		AllowHeaders:     "Origin, Content-Type, Accept, Authorization",
+		AllowCredentials: false,
+	}))
 
 	// Define a route for testing
 	app.Get("/", func(c *fiber.Ctx) error {
