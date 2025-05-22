@@ -3,18 +3,14 @@ set -euo pipefail
 API_URL="http://localhost:8080/categories"
 
 declare -a categories=(
-  "Smartphones"
-  "Ordinateurs portables"
-  "Consoles de jeux"
-  "Écrans"
-  "TV"
-  "Enceintes"
-  "Tablettes"
-  "Accessoires"
-  "Objets connectés"
-  "Ordinateurs de bureau"
-  "Périphériques"
-  "Objets VR/AR"
+  "Smartphone"
+  "Ordinateur"
+  "Tablette"
+  "Ecouteur"
+  "Clavier"
+  "Souris"
+  "Enceinte"
+  "Chargeur"
 )
 
 for name in "${categories[@]}"; do
