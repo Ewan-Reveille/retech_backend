@@ -37,7 +37,7 @@ type Product struct {
 	StripeProductID string `json:"-"`
 	StripePriceID   string `json:"-"`
 
-	Images     []ProductImage `gorm:"foreignKey:ProductID" json:"images"`
+	Images     []ProductImage `gorm:"foreignKey:ProductID" json:"images"` 
 	Promotions []Promotion    `json:"-"`
 
 	CreatedAt time.Time
