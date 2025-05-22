@@ -28,7 +28,7 @@ type Product struct {
 
 	SellerID uuid.UUID `json:"seller_id"`
 	Seller   User      `json:"-"`
-
+	
 	Condition string `json:"condition"`
 
 	CategoryID uuid.UUID `json:"category"`
@@ -37,7 +37,7 @@ type Product struct {
 	StripeProductID string `json:"-"`
 	StripePriceID   string `json:"-"`
 
-	Images     []ProductImage `json:"-"`
+	Images     []ProductImage `gorm:"foreignKey:ProductID" json:"images"`
 	Promotions []Promotion    `json:"-"`
 
 	CreatedAt time.Time

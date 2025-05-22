@@ -17,9 +17,9 @@ func TestUserModel_Create(t *testing.T) {
 
 	user := models.User{
 		ID:       uuid.New(),
-		Username: "testuser",
-		Email:    "test@example.com",
-		Password: "password123",
+		Username: "test1",
+		Email:    "test1@example.com",
+		Password: "Test1234*",
 	}
 
 	err := userModel.Create(&user)
