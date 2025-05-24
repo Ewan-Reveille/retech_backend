@@ -3,9 +3,6 @@
 // @description     This is the backend API for Retech
 // @termsOfService  http://swagger.io/terms/
 
-// @contact.name   Ewan Réveillé--Adam
-// @contact.url    https://aia-handicap.com
-// @contact.email  ewan@aia-handicap.com
 
 // @license.name  MIT
 // @license.url   https://opensource.org/licenses/MIT
