@@ -44,6 +44,16 @@ type Product struct {
 	UpdatedAt time.Time
 }
 
+type SwaggerProduct struct {
+    ID          uuid.UUID       `json:"id"`
+    Title       string          `json:"title"`
+    Description string          `json:"description"`
+    Price       float64         `json:"price"`
+    Condition   ProductCondition `json:"condition"`
+    CategoryID  uuid.UUID       `json:"category_id"`
+    SellerID    uuid.UUID       `json:"seller_id"`
+}
+
 type ProductRepository interface {
 	Create(product *Product) error
 	GetByID(id uuid.UUID) (*Product, error)
@@ -60,12 +70,22 @@ func (pm *ProductModel) Create(product *Product) error {
 	return pm.DB.Create(product).Error
 }
 
+// func (pm *ProductModel) GetByID(id uuid.UUID) (*Product, error) {
+// 	var product Product
+// 	if err := pm.DB.Preload("Seller").Preload("Category").Preload("Images").Preload("Promotions").First(&product, "id = ?", id).Error; err != nil {
+// 		return nil, err
+// 	}
+// 	return &product, nil
+// }
+
 func (pm *ProductModel) GetByID(id uuid.UUID) (*Product, error) {
-	var product Product
-	if err := pm.DB.Preload("Seller").Preload("Category").Preload("Images").Preload("Promotions").First(&product, "id = ?", id).Error; err != nil {
-		return nil, err
-	}
-	return &product, nil
+    var product Product
+    if err := pm.DB.
+        Preload("Images").
+        First(&product, "id = ?", id).Error; err != nil {
+        return nil, err
+    }
+    return &product, nil
 }
 
 func (pm *ProductModel) GetAll() ([]Product, error) {

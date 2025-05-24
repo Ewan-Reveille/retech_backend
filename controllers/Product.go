@@ -18,6 +18,24 @@ type ProductController struct {
 	UserModel      *models.UserModel
 }
 
+// CreateProduct creates a new product listing
+// @Summary Create a new product
+// @Description Create a new product with images and Stripe integration
+// @Tags Products
+// @Accept multipart/form-data
+// @Produce json
+// @Param X-User-Username header string true "Seller's username"
+// @Param title formData string true "Product title"
+// @Param description formData string true "Product description"
+// @Param price formData number true "Product price"
+// @Param category formData string true "Category ID"
+// @Param condition formData string false "Product condition" Enums(new, very good, good, used, fair, unknown)
+// @Param images formData file true "Product images"
+// @Success 201 {object} models.Product
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /products [post]
 func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 
 	form, err := c.MultipartForm()
@@ -141,6 +159,17 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(p)
 }
 
+// GetProduct retrieves a product by ID
+// @Summary Get product details
+// @Description Get detailed information about a specific product
+// @Tags Products
+// @Produce json
+// @Param id path string true "Product ID"
+// @Success 200 {object} models.Product
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /products/{id} [get]
 func getFirstValue(values map[string][]string, key string) string {
 	if vals := values[key]; len(vals) > 0 {
 		return vals[0]
@@ -148,6 +177,14 @@ func getFirstValue(values map[string][]string, key string) string {
 	return ""
 }
 
+// GetAllProducts lists all products
+// @Summary List all products
+// @Description Get a list of all available products
+// @Tags Products
+// @Produce json
+// @Success 200 {array} models.Product
+// @Failure 500 {object} map[string]string
+// @Router /products [get]
 func (pc *ProductController) GetProduct(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := uuid.Parse(idStr)
@@ -163,6 +200,21 @@ func (pc *ProductController) GetProduct(c *fiber.Ctx) error {
 	return c.JSON(product)
 }
 
+
+// UpdateProduct updates product details
+// @Summary Update a product
+// @Description Update an existing product's information
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Param id path string true "Product ID"
+// @Param product body models.Product true "Updated product details"
+// @Success 200 {object} models.Product
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /products/{id} [put]
 func (pc *ProductController) GetAllProducts(c *fiber.Ctx) error {
 
 	products, err := pc.ProductService.GetAll()
@@ -173,7 +225,17 @@ func (pc *ProductController) GetAllProducts(c *fiber.Ctx) error {
 	return c.JSON(products)
 }
 
-// PUT /products/:id
+// DeleteProduct removes a product
+// @Summary Delete a product
+// @Description Delete a product listing (seller authorization required)
+// @Tags Products
+// @Param id path string true "Product ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /products/{id} [delete]
 func (pc *ProductController) UpdateProduct(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := uuid.Parse(idStr)

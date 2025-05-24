@@ -1,17 +1,37 @@
+// @title           Retech API
+// @version         1.0
+// @description     This is the backend API for Retech
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   Ewan Réveillé--Adam
+// @contact.url    https://aia-handicap.com
+// @contact.email  ewan@aia-handicap.com
+
+// @license.name  MIT
+// @license.url   https://opensource.org/licenses/MIT
+
+// @host      localhost:8080
+// @BasePath  /api/v1
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 package main
 
 import (
-	"log"
-	"os"
+    "log"
+    "os"
 
-	"github.com/Ewan-Reveille/retech/config"
-	"github.com/Ewan-Reveille/retech/db"
-	"github.com/Ewan-Reveille/retech/routes"
-	"github.com/Ewan-Reveille/retech/services"
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/cors"
-	"github.com/joho/godotenv"
-	"github.com/stripe/stripe-go/v81"
+    "github.com/Ewan-Reveille/retech/config"
+    "github.com/Ewan-Reveille/retech/db"
+    "github.com/Ewan-Reveille/retech/routes"
+    "github.com/Ewan-Reveille/retech/services"
+    "github.com/gofiber/fiber/v2"
+    "github.com/gofiber/fiber/v2/middleware/cors"
+    swagger "github.com/arsmn/fiber-swagger/v2"
+    "github.com/joho/godotenv"
+    "github.com/stripe/stripe-go/v81"
+    _ "github.com/Ewan-Reveille/retech/docs"
 )
 
 func main() {
@@ -41,6 +61,7 @@ func main() {
 	routes.RegisterUserRoutes(app, DB)
 	routes.RegisterCategoryRoutes(app, DB)
 	routes.RegisterOrderRoutes(app, DB)
+	app.Get("/swagger/*", swagger.HandlerDefault)
 	// Connect to DB (assuming db.Connect() is for keeping the DB connection alive)
 	db.Connect()
 

@@ -6,12 +6,18 @@ import (
 )
 
 type Category struct {
-	gorm.Model
+	gorm.Model    `swaggerignore:"true"`
 	// ID   uuid.UUID `gorm:"type:uuid;default:uuid_generate_v4();primaryKey"`
 	ID   uuid.UUID `gorm:"type:uuid;primaryKey"`
 	Name string    `gorm:"unique"`
 
 	Products []Product
+}
+
+// @swagger:model
+type SwaggerCategory struct {
+    ID   uuid.UUID `json:"id"`
+    Name string    `json:"name"`
 }
 
 type CategoryRepository interface {
@@ -31,12 +37,20 @@ func (cm *CategoryModel) Create(category *Category) error {
 	return cm.DB.Create(category).Error
 }
 
+// func (cm *CategoryModel) GetByID(id uuid.UUID) (*Category, error) {
+// 	var category Category
+// 	if err := cm.DB.Preload("Products").First(&category, "id = ?", id).Error; err != nil {
+// 		return nil, err
+// 	}
+// 	return &category, nil
+// }
+
 func (cm *CategoryModel) GetByID(id uuid.UUID) (*Category, error) {
-	var category Category
-	if err := cm.DB.Preload("Products").First(&category, "id = ?", id).Error; err != nil {
-		return nil, err
-	}
-	return &category, nil
+    var category Category
+    if err := cm.DB.First(&category, "id = ?", id).Error; err != nil {
+        return nil, err
+    }
+    return &category, nil
 }
 
 func (cm *CategoryModel) GetByName(name string) (*Category, error) {

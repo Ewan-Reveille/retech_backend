@@ -18,6 +18,18 @@ func (uc *UserController) RegisterRoutes(router fiber.Router) {
 	router.Get("/user", uc.GetAllUsers)
 }
 
+// CreateUser creates a new user
+// @Summary Register a new user
+// @Description Create a new user account
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body services.CreateUserRequest true "User registration data"
+// @Success 201 {object} UserResponse
+// @Failure 400 {object} map[string]string
+// @Failure 409 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /register [post]
 func (uc *UserController) CreateUser(c *fiber.Ctx) error {
 	var req services.CreateUserRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -42,6 +54,17 @@ func (uc *UserController) CreateUser(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusCreated).JSON(user)
 }
 
+// Login authenticates a user
+// @Summary User login
+// @Description Authenticate user and return user details
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param credentials body services.LoginRequest true "Login credentials"
+// @Success 200 {object} UserResponse
+// @Failure 400 {object} map[string]string
+// @Failure 401 {object} map[string]string
+// @Router /login [post]
 func (uc *UserController) Login(c *fiber.Ctx) error {
 	var req services.LoginRequest
 	if err := c.BodyParser(&req); err != nil {
@@ -64,6 +87,15 @@ type UserResponse struct {
 }
 
 
+// GetAllUsers retrieves all users
+// @Summary List all users
+// @Description Get a list of all registered users
+// @Tags Users
+// @Produce json
+// @Security ApiKeyAuth
+// @Success 200 {array} UserResponse
+// @Failure 500 {object} map[string]string
+// @Router /user [get]
 func (uc *UserController) GetAllUsers(c *fiber.Ctx) error {
     log.Println("[GetAllUsers] début")
     users, err := uc.UserService.GetAll()

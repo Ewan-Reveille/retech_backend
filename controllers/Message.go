@@ -11,7 +11,18 @@ type MessageController struct {
 	MessageService *services.MessageService
 }
 
+
 // POST /messages
+// @Summary Create a new message
+// @Description Create a new message between users
+// @Tags Messages
+// @Accept json
+// @Produce json
+// @Param message body models.Message true "Message object"
+// @Success 201 {object} models.Message
+// @Failure 400 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /messages [post]
 func (mc *MessageController) CreateMessage(c *fiber.Ctx) error {
 	var message models.Message
 	if err := c.BodyParser(&message); err != nil {
@@ -30,6 +41,16 @@ func (mc *MessageController) CreateMessage(c *fiber.Ctx) error {
 }
 
 // GET /messages/:id
+// @Summary Get a message by ID
+// @Description Retrieve a specific message by its ID
+// @Tags Messages
+// @Produce json
+// @Param id path string true "Message ID"
+// @Success 200 {object} models.Message
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /messages/{id} [get]
 func (mc *MessageController) GetMessage(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := uuid.Parse(idStr)
@@ -45,6 +66,18 @@ func (mc *MessageController) GetMessage(c *fiber.Ctx) error {
 }
 
 // PUT /messages/:id
+// @Summary Update a message
+// @Description Update an existing message's content
+// @Tags Messages
+// @Accept json
+// @Produce json
+// @Param id path string true "Message ID"
+// @Param message body models.Message true "Updated message object"
+// @Success 200 {object} models.Message
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /messages/{id} [put]
 func (mc *MessageController) UpdateMessage(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := uuid.Parse(idStr)
@@ -69,6 +102,15 @@ func (mc *MessageController) UpdateMessage(c *fiber.Ctx) error {
 }
 
 // DELETE /messages/:id
+// @Summary Delete a message
+// @Description Delete a message by ID
+// @Tags Messages
+// @Param id path string true "Message ID"
+// @Success 204
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /messages/{id} [delete]
 func (mc *MessageController) DeleteMessage(c *fiber.Ctx) error {
 	idStr := c.Params("id")
 	id, err := uuid.Parse(idStr)
