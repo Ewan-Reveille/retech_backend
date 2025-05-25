@@ -50,6 +50,7 @@ func main() {
 	}
 
 	app := fiber.New()
+	app.Static("/uploads", "./uploads")
 
 	realStripeClient := &services.StripeClientImpl{}
 	// Run migrations
