@@ -50,7 +50,7 @@ func main() {
 	}
 
 	app := fiber.New()
-	app.Static("/uploads", "./uploads")
+	app.Static("/uploads", "/home/root/retech_backend/uploads")
 
 	realStripeClient := &services.StripeClientImpl{}
 	// Run migrations

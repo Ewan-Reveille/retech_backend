@@ -97,7 +97,7 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	// }
 
 	// Ensure upload directory exists
-	uploadDir := "./uploads"
+	uploadDir := "/home/root/retech_backend/uploads"
 	if err := os.MkdirAll(uploadDir, 0o755); err != nil {
 		log.Printf("couldn't create upload dir: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Server setup error"})
