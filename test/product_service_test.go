@@ -8,7 +8,7 @@ import (
 	"github.com/Ewan-Reveille/retech/services"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
-	"github.com/stripe/stripe-go/v81"
+	"github.com/stripe/stripe-go/v82"
 )
 
 // Mock Stripe client

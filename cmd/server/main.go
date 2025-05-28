@@ -27,7 +27,7 @@ import (
     "github.com/gofiber/fiber/v2/middleware/cors"
     swagger "github.com/arsmn/fiber-swagger/v2"
     "github.com/joho/godotenv"
-    "github.com/stripe/stripe-go/v81"
+    "github.com/stripe/stripe-go/v82"
     _ "github.com/Ewan-Reveille/retech/docs"
 )
 

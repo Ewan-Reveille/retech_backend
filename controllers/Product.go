@@ -1,16 +1,20 @@
 package controllers
 
 import (
+	"log"
+
 	"github.com/Ewan-Reveille/retech/models"
 	"github.com/Ewan-Reveille/retech/services"
 	"github.com/gofiber/fiber/v2"
 	"github.com/google/uuid"
-	"log"
 
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
+
+	"github.com/stripe/stripe-go/v82/checkout/session"
+	"github.com/stripe/stripe-go/v82"
 )
 
 type ProductController struct {
@@ -158,6 +162,63 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 
 	return c.Status(fiber.StatusCreated).JSON(p)
 }
+
+// PurchaseProduct initiates a Stripe Checkout Session
+// @Summary Purchase a product
+// @Description Create a Stripe Checkout session to buy a product
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Param id path string true "Product ID"
+// @Success 200 {object} map[string]string
+// @Failure 400 {object} map[string]string
+// @Failure 404 {object} map[string]string
+// @Failure 500 {object} map[string]string
+// @Router /products/{id}/purchase [post]
+func (pc *ProductController) PurchaseProduct(c *fiber.Ctx) error {
+	idStr := c.Params("id")
+	id, err := uuid.Parse(idStr)
+	if err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid product ID"})
+	}
+
+	product, err := pc.ProductService.GetByID(id)
+	if err != nil {
+		return c.Status(fiber.StatusNotFound).JSON(fiber.Map{"error": "Product not found"})
+	}
+
+	// Initialize Stripe
+	stripe.Key = os.Getenv("STRIPE_SECRET_KEY")
+
+	// Create Stripe Checkout Session
+	params := &stripe.CheckoutSessionParams{
+		PaymentMethodTypes: stripe.StringSlice([]string{"card"}),
+		LineItems: []*stripe.CheckoutSessionLineItemParams{
+			{
+				PriceData: &stripe.CheckoutSessionLineItemPriceDataParams{
+					Currency: stripe.String("eur"),
+					ProductData: &stripe.CheckoutSessionLineItemPriceDataProductDataParams{
+						Name: stripe.String(product.Title),
+					},
+					UnitAmount: stripe.Int64(int64(product.Price * 100)), // € -> cents
+				},
+				Quantity: stripe.Int64(1),
+			},
+		},
+		Mode: stripe.String(string(stripe.CheckoutSessionModePayment)),
+		SuccessURL: stripe.String("https://yourdomain.com/success"),
+		CancelURL:  stripe.String("https://yourdomain.com/cancel"),
+	}
+
+	session, err := session.New(params)
+	if err != nil {
+		log.Printf("Stripe error: %v", err)
+		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Stripe session creation failed"})
+	}
+
+	return c.JSON(fiber.Map{"checkout_url": session.URL})
+}
+
 
 // GetProduct retrieves a product by ID
 // @Summary Get product details

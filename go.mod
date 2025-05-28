@@ -9,6 +9,7 @@ require (
 	github.com/joho/godotenv v1.5.1
 	github.com/stretchr/testify v1.10.0
 	github.com/stripe/stripe-go/v81 v81.4.0
+	github.com/stripe/stripe-go/v82 v82.1.0
 	github.com/swaggo/swag v1.16.4
 	golang.org/x/crypto v0.31.0
 	gorm.io/driver/postgres v1.5.11

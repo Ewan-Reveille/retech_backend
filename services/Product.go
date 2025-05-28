@@ -4,9 +4,9 @@ import (
 	"errors"
 	"github.com/Ewan-Reveille/retech/models"
 	"github.com/google/uuid"
-	"github.com/stripe/stripe-go/v81"
-	"github.com/stripe/stripe-go/v81/price"
-	"github.com/stripe/stripe-go/v81/product"
+	"github.com/stripe/stripe-go/v82"
+	"github.com/stripe/stripe-go/v82/price"
+	"github.com/stripe/stripe-go/v82/product"
 	"gorm.io/gorm"
 
 	"log"
