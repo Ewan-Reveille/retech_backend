@@ -289,7 +289,7 @@ func fetchImageCaption(filePath string) (string, error) {
 	writer := multipart.NewWriter(&requestBody)
 
 	// 3. Création du champ "image" dans le formulaire
-	part, err := writer.CreateFormFile("image", filepath.Base(filePath))
+	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
 	if err != nil {
 		return "", fmt.Errorf("cannot create form file: %w", err)
 	}
