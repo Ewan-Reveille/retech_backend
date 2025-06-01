@@ -22,6 +22,7 @@ import (
     "net/http"
 	"time"
 	"net/textproto"
+	"golang.org/x/text/encoding/charmap"
 )
 
 type ProductController struct {
@@ -299,60 +300,60 @@ func (pc *ProductController) GetAllProducts(c *fiber.Ctx) error {
 
 // fetchImageCaption envoie le fichier image à l’API de tagging et retourne le header X-image-caption
 func fetchImageCaption(filePath string) (string, error) {
-	log.Printf("Début fetchImageCaption: %s", filePath)
+    log.Printf("Début fetchImageCaption: %s", filePath)
 
     file, err := os.Open(filePath)
     if err != nil {
-		log.Printf("ERREUR ouverture fichier: %v", err)
-
+        log.Printf("ERREUR ouverture fichier: %v", err)
         return "", fmt.Errorf("cannot open file: %w", err)
     }
     defer file.Close()
 
+    // Préparation du multipart/form-data avec Content-Type détecté dynamiquement
     var requestBody bytes.Buffer
     writer := multipart.NewWriter(&requestBody)
 
-    // Création du champ "file" (nom exact attendu par l'API)
-    h := make(textproto.MIMEHeader)
-	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", filepath.Base(filePath)))
-	h.Set("Content-Type", "image/jpeg")
+    // Lire 512 octets pour détecter le type MIME
+    buf := make([]byte, 512)
+    if _, err := file.Read(buf); err != nil {
+        return "", fmt.Errorf("cannot read file header: %w", err)
+    }
+    if _, err := file.Seek(0, io.SeekStart); err != nil {
+        return "", fmt.Errorf("cannot seek file back to start: %w", err)
+    }
+    mimeType := http.DetectContentType(buf)
 
-	part, err := writer.CreatePart(h)
-	if err != nil {
-		return "", fmt.Errorf("cannot create form part: %w", err)
-	}
+    // Créer manuellement la partie multipart avec le bon Content-Type
+    h := make(textproto.MIMEHeader)
+    h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", filepath.Base(filePath)))
+    h.Set("Content-Type", mimeType)
+
+    part, err := writer.CreatePart(h)
+    if err != nil {
+        return "", fmt.Errorf("cannot create form part: %w", err)
+    }
 
     if _, err := io.Copy(part, file); err != nil {
         return "", fmt.Errorf("cannot copy file data: %w", err)
     }
-
     if err := writer.Close(); err != nil {
         return "", fmt.Errorf("cannot close writer: %w", err)
     }
 
-    // Récupération du token depuis les variables d'environnement
+    // Récupération du token
     aiaToken := os.Getenv("AIA_TOKEN")
     if aiaToken == "" {
         return "", fmt.Errorf("AIA_TOKEN environment variable not set")
     }
-	tokenLog := "Non défini"
-	if aiaToken != "" {
-		tokenLog = fmt.Sprintf("%s...%s (longueur: %d)", 
-			aiaToken[:4], 
-			aiaToken[len(aiaToken)-4:],
-			len(aiaToken))
-	}
+    tokenLog := fmt.Sprintf("%s...%s (longueur: %d)", aiaToken[:4], aiaToken[len(aiaToken)-4:], len(aiaToken))
+    log.Printf("AIA_TOKEN: %s", tokenLog)
 
-	log.Printf("AIA_TOKEN: %s", tokenLog)
-
-
-    // Construction de l'URL avec le token dans le chemin
     url := fmt.Sprintf("https://tagging.aia-handicap.com/analyze-image/%s/?language=fr", aiaToken)
-	log.Printf("Envoi requête à: %s", url)
+    log.Printf("Envoi requête à: %s", url)
 
     req, err := http.NewRequest(http.MethodPost, url, &requestBody)
     if err != nil {
-		log.Printf("ERREUR création requête: %v", err)
+        log.Printf("ERREUR création requête: %v", err)
         return "", fmt.Errorf("cannot create HTTP request: %w", err)
     }
     req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -360,27 +361,35 @@ func fetchImageCaption(filePath string) (string, error) {
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
-		log.Printf("ERREUR envoi requête: %v", err)
-
+        log.Printf("ERREUR envoi requête: %v", err)
         return "", fmt.Errorf("error sending request: %w", err)
     }
     defer resp.Body.Close()
-	log.Printf("Réponse API - Status: %d, Headers: %v", resp.StatusCode, resp.Header)
 
-    // Vérification du code de statut
+    log.Printf("Réponse API - Status: %d, Headers: %v", resp.StatusCode, resp.Header)
     if resp.StatusCode != http.StatusOK {
         bodyBytes, _ := io.ReadAll(resp.Body)
-		bodyStr := string(bodyBytes)
-
-		log.Printf("ERREUR API - Status: %d, Body: %s", resp.StatusCode, bodyStr)
+        log.Printf("ERREUR API - Status: %d, Body: %s", resp.StatusCode, string(bodyBytes))
         return "", fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(bodyBytes))
     }
 
-    caption := resp.Header.Get("X-image-caption")
-	log.Printf("Caption reçu: %s", caption)
+    // Récupérer la caption « raw » (ISO-8859-1)
+    rawCaption := resp.Header.Get("X-Image-Caption")
+    log.Printf("Caption raw reçu (ISO-8859-1) : %q", rawCaption)
 
-    return caption, nil
+    // Décoder de ISO-8859-1 → UTF-8
+    decoder := charmap.ISO8859_1.NewDecoder()
+    captionUTF8, err := decoder.String(rawCaption)
+    if err != nil {
+        // Si la conversion échoue, on retombe sur la rawCaption, mais on loggue l'erreur
+        log.Printf("ERREUR conversion Latin1→UTF8: %v", err)
+        captionUTF8 = rawCaption
+    }
+
+    log.Printf("Caption décodée en UTF-8 : %q", captionUTF8)
+    return captionUTF8, nil
 }
+
 
 // DeleteProduct removes a product
 // @Summary Delete a product
