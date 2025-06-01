@@ -20,6 +20,7 @@ import (
     "io"
     "mime/multipart"
     "net/http"
+	"time"
 )
 
 type ProductController struct {
@@ -46,17 +47,22 @@ type ProductController struct {
 // @Failure 500 {object} map[string]string
 // @Router /products [post]
 func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
+	log.Println("CreateProduct called")
 	// 1. Récupération du formulaire
 	form, err := c.MultipartForm()
 	if err != nil {
+		log.Printf("Erreur parsing MultipartForm: %v", err)
+
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Failed to parse form"})
 	}
-
+	log.Println("MultipartForm analysé avec succès")
 	// 2. Vérification et récupération de l'utilisateur via l'en-tête X-User-Username
 	username := c.Get("X-User-Username")
 	if username == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "X-User-Username header is required"})
 	}
+	log.Printf("X-User-Username reçu: %s", username)
+
 	user, err := pc.UserModel.GetByUsername(username)
 	if err != nil {
 		log.Printf("error fetching user by username: %v", err)
@@ -94,9 +100,12 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	if title == "" || description == "" || categoryIDStr == "" {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "title, description, and category are required"})
 	}
+	log.Printf("Validation des champs - Titre: %s, Description: %s, Prix: %s, Catégorie: %s", title, description, priceStr, categoryIDStr)
 
 	// 4. Création du dossier d’uploads si nécessaire
 	uploadDir := "./uploads"
+	log.Printf("Création du dossier uploads: %s", uploadDir)
+
 	if err := os.MkdirAll(uploadDir, 0o755); err != nil {
 		log.Printf("couldn't create upload dir: %v", err)
 		return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Server setup error"})
@@ -107,6 +116,8 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	if len(files) == 0 {
 		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "At least one image is required"})
 	}
+	log.Printf("Dossier uploads créé/verifié")
+	log.Printf("Nombre d'images reçues: %d", len(files))
 
 	// 6. Construction de la structure Product (sans images pour l'instant)
 	prodID := uuid.New()
@@ -125,7 +136,11 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	//    a) le sauvegarde en local
 	//    b) l’envoie à l’API de tagging pour récupérer la légende
 	//    c) crée une entrée ProductImage avec l’Alt rempli
+	log.Printf("Nombre d'images reçues: %d", len(files))
+
 	for _, fh := range files {
+		log.Printf("Traitement image %d: %s (Taille: %d bytes)", i+1, fh.Filename, fh.Size)
+
 		imgID := uuid.New()
 		ext := filepath.Ext(fh.Filename)
 		savePath := filepath.Join(uploadDir, fmt.Sprintf("%s%s", imgID.String(), ext))
@@ -135,15 +150,21 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 			log.Printf("error saving %s: %v", fh.Filename, err)
 			return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{"error": "Failed to save image"})
 		}
+		log.Printf("Sauvegarde image dans: %s", savePath)
 
 		// b) Envoi du fichier à l’API de tagging
-		altText, tagErr := fetchImageCaption(savePath)
-		if tagErr != nil {
-			// Si l’API échoue, on log et on continue sans alt ou avec alt vide
-			log.Printf("error fetching caption for %s: %v", savePath, tagErr)
-			altText = ""
-		}
+		log.Printf("Appel API tagging pour: %s", savePath)
+		startTime := time.Now()
 
+		altText, tagErr := fetchImageCaption(savePath)
+		duration := time.Since(startTime)
+
+		if tagErr != nil {
+			log.Printf("ERREUR API tagging (%v) - Durée: %v: %v", savePath, duration, tagErr)
+			altText = "Image sans description"
+		} else {
+			log.Printf("Succès API tagging (%v) - Durée: %v - AltText: '%s'", savePath, duration, altText)
+		}
 		// c) Ajout au slice d’images du produit
 		p.Images = append(p.Images, models.ProductImage{
 			ID:        imgID,
@@ -277,8 +298,12 @@ func (pc *ProductController) GetAllProducts(c *fiber.Ctx) error {
 
 // fetchImageCaption envoie le fichier image à l’API de tagging et retourne le header X-image-caption
 func fetchImageCaption(filePath string) (string, error) {
+	log.Printf("Début fetchImageCaption: %s", filePath)
+
     file, err := os.Open(filePath)
     if err != nil {
+		log.Printf("ERREUR ouverture fichier: %v", err)
+
         return "", fmt.Errorf("cannot open file: %w", err)
     }
     defer file.Close()
@@ -305,12 +330,24 @@ func fetchImageCaption(filePath string) (string, error) {
     if aiaToken == "" {
         return "", fmt.Errorf("AIA_TOKEN environment variable not set")
     }
+	tokenLog := "Non défini"
+	if aiaToken != "" {
+		tokenLog = fmt.Sprintf("%s...%s (longueur: %d)", 
+			aiaToken[:4], 
+			aiaToken[len(aiaToken)-4:],
+			len(aiaToken))
+	}
+
+	log.Printf("AIA_TOKEN: %s", tokenLog)
+
 
     // Construction de l'URL avec le token dans le chemin
     url := fmt.Sprintf("https://tagging.aia-handicap.com/analyze-image/%s/?language=fr", aiaToken)
-    
+	log.Printf("Envoi requête à: %s", url)
+
     req, err := http.NewRequest(http.MethodPost, url, &requestBody)
     if err != nil {
+		log.Printf("ERREUR création requête: %v", err)
         return "", fmt.Errorf("cannot create HTTP request: %w", err)
     }
     req.Header.Set("Content-Type", writer.FormDataContentType())
@@ -318,17 +355,25 @@ func fetchImageCaption(filePath string) (string, error) {
     client := &http.Client{}
     resp, err := client.Do(req)
     if err != nil {
+		log.Printf("ERREUR envoi requête: %v", err)
+
         return "", fmt.Errorf("error sending request: %w", err)
     }
     defer resp.Body.Close()
+	log.Printf("Réponse API - Status: %d, Headers: %v", resp.StatusCode, resp.Header)
 
     // Vérification du code de statut
     if resp.StatusCode != http.StatusOK {
         bodyBytes, _ := io.ReadAll(resp.Body)
+		bodyStr := string(bodyBytes)
+
+		log.Printf("ERREUR API - Status: %d, Body: %s", resp.StatusCode, bodyStr)
         return "", fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(bodyBytes))
     }
 
     caption := resp.Header.Get("X-image-caption")
+	log.Printf("Caption reçu: %s", caption)
+
     return caption, nil
 }
 
