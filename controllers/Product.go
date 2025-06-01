@@ -306,7 +306,7 @@ func fetchImageCaption(filePath string) (string, error) {
 
 	// 6. Construction de la requête HTTP POST
 	aiaToken := os.Getenv("AIA_TOKEN")
-	url := fmt.Sprintf("https://tagging.aia-handicap.com/analyze-image/%s", aiaToken)
+	url := fmt.Sprintf("https://tagging.aia-handicap.com/analyze-image/%s/?language=fr", aiaToken)
 	req, err := http.NewRequest(http.MethodPost, url, &requestBody)
 	if err != nil {
 		return "", fmt.Errorf("cannot create HTTP request: %w", err)
