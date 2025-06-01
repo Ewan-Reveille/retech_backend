@@ -21,6 +21,7 @@ import (
     "mime/multipart"
     "net/http"
 	"time"
+	"net/textproto"
 )
 
 type ProductController struct {
@@ -312,10 +313,14 @@ func fetchImageCaption(filePath string) (string, error) {
     writer := multipart.NewWriter(&requestBody)
 
     // Création du champ "file" (nom exact attendu par l'API)
-    part, err := writer.CreateFormFile("file", filepath.Base(filePath))
-    if err != nil {
-        return "", fmt.Errorf("cannot create form file: %w", err)
-    }
+    h := make(textproto.MIMEHeader)
+	h.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`, "file", filepath.Base(filePath)))
+	h.Set("Content-Type", "image/jpeg")
+
+	part, err := writer.CreatePart(h)
+	if err != nil {
+		return "", fmt.Errorf("cannot create form part: %w", err)
+	}
 
     if _, err := io.Copy(part, file); err != nil {
         return "", fmt.Errorf("cannot copy file data: %w", err)
