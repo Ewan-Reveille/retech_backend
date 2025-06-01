@@ -277,59 +277,59 @@ func (pc *ProductController) GetAllProducts(c *fiber.Ctx) error {
 
 // fetchImageCaption envoie le fichier image à l’API de tagging et retourne le header X-image-caption
 func fetchImageCaption(filePath string) (string, error) {
-	// 1. Ouverture du fichier
-	file, err := os.Open(filePath)
-	if err != nil {
-		return "", fmt.Errorf("cannot open file: %w", err)
-	}
-	defer file.Close()
+    file, err := os.Open(filePath)
+    if err != nil {
+        return "", fmt.Errorf("cannot open file: %w", err)
+    }
+    defer file.Close()
 
-	// 2. Création d’un buffer multipart/form-data
-	var requestBody bytes.Buffer
-	writer := multipart.NewWriter(&requestBody)
+    var requestBody bytes.Buffer
+    writer := multipart.NewWriter(&requestBody)
 
-	// 3. Création du champ "image" dans le formulaire
-	part, err := writer.CreateFormFile("file", filepath.Base(filePath))
-	if err != nil {
-		return "", fmt.Errorf("cannot create form file: %w", err)
-	}
+    // Création du champ "file" (nom exact attendu par l'API)
+    part, err := writer.CreateFormFile("file", filepath.Base(filePath))
+    if err != nil {
+        return "", fmt.Errorf("cannot create form file: %w", err)
+    }
 
-	// 4. Copie du contenu du fichier dans le champ
-	if _, err := io.Copy(part, file); err != nil {
-		return "", fmt.Errorf("cannot copy file data: %w", err)
-	}
+    if _, err := io.Copy(part, file); err != nil {
+        return "", fmt.Errorf("cannot copy file data: %w", err)
+    }
 
-	// 5. Fermeture du writer pour terminer le multipart
-	if err := writer.Close(); err != nil {
-		return "", fmt.Errorf("cannot close writer: %w", err)
-	}
+    if err := writer.Close(); err != nil {
+        return "", fmt.Errorf("cannot close writer: %w", err)
+    }
 
-	// 6. Construction de la requête HTTP POST
-	aiaToken := os.Getenv("AIA_TOKEN")
-	url := fmt.Sprintf("https://tagging.aia-handicap.com/analyze-image/%s/?language=fr", aiaToken)
-	req, err := http.NewRequest(http.MethodPost, url, &requestBody)
-	if err != nil {
-		return "", fmt.Errorf("cannot create HTTP request: %w", err)
-	}
-	// Ajout de l’en-tête Content-Type pour indiquer le multipart
-	req.Header.Set("Content-Type", writer.FormDataContentType())
+    // Récupération du token depuis les variables d'environnement
+    aiaToken := os.Getenv("AIA_TOKEN")
+    if aiaToken == "" {
+        return "", fmt.Errorf("AIA_TOKEN environment variable not set")
+    }
 
-	// 7. Envoi de la requête
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("error sending request: %w", err)
-	}
-	defer resp.Body.Close()
+    // Construction de l'URL avec le token dans le chemin
+    url := fmt.Sprintf("https://tagging.aia-handicap.com/analyze-image/%s/?language=fr", aiaToken)
+    
+    req, err := http.NewRequest(http.MethodPost, url, &requestBody)
+    if err != nil {
+        return "", fmt.Errorf("cannot create HTTP request: %w", err)
+    }
+    req.Header.Set("Content-Type", writer.FormDataContentType())
 
-	// 8. Lecture du header X-image-caption
-	caption := resp.Header.Get("X-image-caption")
-	// On peut valider le code HTTP (optionnel)
-	if resp.StatusCode != http.StatusOK {
-		return caption, fmt.Errorf("non-200 status: %d", resp.StatusCode)
-	}
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return "", fmt.Errorf("error sending request: %w", err)
+    }
+    defer resp.Body.Close()
 
-	return caption, nil
+    // Vérification du code de statut
+    if resp.StatusCode != http.StatusOK {
+        bodyBytes, _ := io.ReadAll(resp.Body)
+        return "", fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(bodyBytes))
+    }
+
+    caption := resp.Header.Get("X-image-caption")
+    return caption, nil
 }
 
 // DeleteProduct removes a product
