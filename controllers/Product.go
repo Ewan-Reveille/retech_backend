@@ -138,7 +138,7 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 	//    c) crée une entrée ProductImage avec l’Alt rempli
 	log.Printf("Nombre d'images reçues: %d", len(files))
 
-	for _, fh := range files {
+	for i, fh := range files {
 		log.Printf("Traitement image %d: %s (Taille: %d bytes)", i+1, fh.Filename, fh.Size)
 
 		imgID := uuid.New()
