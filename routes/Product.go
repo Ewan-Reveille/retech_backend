@@ -22,4 +22,5 @@ func RegisterProductRoutes(app fiber.Router, db *gorm.DB, stripeClient services.
 	app.Get("/products", productController.GetAllProducts)
 	app.Put("/products/:id", productController.UpdateProduct)
 	app.Delete("/products/:id", productController.DeleteProduct)
+	app.Post("/create-payment-intent", productController.CreatePaymentIntent)
 }

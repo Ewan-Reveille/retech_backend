@@ -200,11 +200,18 @@ func (pc *ProductController) CreateProduct(c *fiber.Ctx) error {
 }
 
 func (pc *ProductController) CreatePaymentIntent(c *fiber.Ctx) error {
-	idStr := c.Params("id")
-	id, err := uuid.Parse(idStr)
-	if err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid product ID"})
-	}
+
+	type Request struct {
+        ProductID string `json:"productId"`
+    }
+    var req Request
+    if err := c.BodyParser(&req); err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid request"})
+    }
+	id, err := uuid.Parse(req.ProductID)
+    if err != nil {
+        return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{"error": "Invalid product ID"})
+    }
 
 	product, err := pc.ProductService.GetByID(id)
 	if err != nil {
